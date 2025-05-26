@@ -1,0 +1,223 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Roles {
+  USER
+  ADMIN
+  SUPER_ADMIN
+  VIEWER_ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum UserStatus {
+  VERIFIED
+  UNVERIFIED
+}
+
+model Sessions {
+  id     Int  @id @default(autoincrement())
+  device Json
+
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id       Int        @id @default(autoincrement())
+  name     String?
+  email    String?    @unique
+  phone    String?    @unique
+  password String?
+  telegramId  String?
+  role     Roles?  @default(USER)
+  status   UserStatus @default(UNVERIFIED)
+
+  Orders    Order[]
+  Region    Region?    @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  regionId  Int?
+  sessions  Sessions[]
+  comments  Comment[]
+  createdAt DateTime   @default(now())
+}
+
+model Master {
+  id              Int       @id @default(autoincrement())
+  name            String
+  email           String    @unique
+  phone           String    @unique
+  password        String
+  isActive        Boolean   @default(true)
+  year            Int
+  minWorkingHours Int
+  priceHourly     Float
+  priceDaily      Float
+  experience      Int
+  image           String
+  passportImage   String
+  about           String
+  Orders          Order[]   @relation("OrderMasters")
+  Region          Region?   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  regionId        Int?
+  Level           Level?    @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  levelId         Int
+  createdAt       DateTime  @default(now())
+  products        Product[] @relation("MasterProducts")
+  Stars           Star[]
+}
+
+model Level {
+  id        Int      @id @default(autoincrement())
+  name      String
+  Master    Master[]
+  createdAt DateTime @default(now())
+}
+
+model Tool {
+  id          Int    @id @default(autoincrement())
+  name        String
+  image       String
+  price       Float
+  description String
+  quantity    Int
+  code        Int
+
+  Brand      Brand?      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brandId    Int?
+  Size       Size?       @relation(fields: [sizeId], references: [id], onDelete: Cascade)
+  sizeId     Int?
+  Capacity   Capacity?   @relation(fields: [capacityId], references: [id], onDelete: Cascade)
+  capacityId Int?
+  Orders     Order[]     @relation("OrderTools")
+  Product    Product?    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int?
+  orderTools OrderTool[]
+  createdAt  DateTime    @default(now())
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String
+  Tools     Tool[]
+  createdAt DateTime @default(now())
+}
+
+model Size {
+  id        Int      @id @default(autoincrement())
+  name      String
+  Tools     Tool[]
+  createdAt DateTime @default(now())
+}
+
+model Region {
+  id        Int      @id @default(autoincrement())
+  name      String
+  Users     User[]
+  Master    Master[]
+  createdAt DateTime @default(now())
+}
+
+model Capacity {
+  id        Int      @id @default(autoincrement())
+  name      String
+  Tools     Tool[]
+  createdAt DateTime @default(now())
+}
+
+model OrderTool {
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId Int
+
+  tool   Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  toolId Int
+
+  quantity Int
+
+  @@id([orderId, toolId])
+}
+
+model Product {
+  id              Int      @id @default(autoincrement())
+  name            String?
+  description     String
+  isActive        Boolean  @default(true)
+  image           String
+  minWorkingHours Int
+  priceHourly     Float
+  priceDaily      Float
+  tools           Tool[]
+  Orders          Order[]  @relation("OrderProducts")
+  createdAt       DateTime @default(now())
+  masters         Master[] @relation("MasterProducts")
+}
+
+model Order {
+  id                Int         @id @default(autoincrement())
+  location          Json
+  address           String
+  date              DateTime
+  totalPrice        Float?
+  quantity          Int?
+  paymentType       String?
+  withDelivery      Boolean?
+  commentToDelivery String?
+  status            OrderStatus @default(PENDING)
+  User              User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            Int?
+  Tools             Tool[]      @relation("OrderTools")
+  Products          Product[]   @relation("OrderProducts")
+  Masters           Master[]    @relation("OrderMasters")
+  orderTools        OrderTool[]
+  createdAt         DateTime    @default(now())
+  comments          Comment[]
+}
+
+model GeneralInfo {
+  id     Int    @id @default(autoincrement())
+  email  String
+  links  String
+  phones String
+}
+
+model FAQ {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id       Int     @id @default(autoincrement())
+  message  String
+  star     Star[]
+  Order    Order?  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId  Int?
+  User     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int?
+}
+
+model Star {
+  id        Int      @id @default(autoincrement())
+  star     Int
+  Master    Master?  @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  masterId  Int?
+  Comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId Int?
+}
