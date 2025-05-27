@@ -1,0 +1,46 @@
+name: CI/CD to AWS Lightsail
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy files to AWS Lightsail
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: 22
+          source: 'dist/*,package.json,ecosystem.config.js,prisma'
+          target: '/home/ubuntu/nestjs-app'
+
+      - name: Restart App on Lightsail via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/nestjs-app
+             /usr/bin/npm install --omit=dev
+             /usr/bin restart ecosystem.config.js || /usr/bin/pm2 start ecosystem.config.js
