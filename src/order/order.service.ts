@@ -172,7 +172,7 @@ export class OrderService {
 
   async myOrders(req: Request){
     try {
-      let my = await this.prisma.order.findMany({where: { userId: req['user'].id}, include: { Tools: true, Masters: true}})
+      let my = await this.prisma.order.findMany({ where: { userId: req['user'].id }, include: { Tools: true, Masters: true, Products: true } })
       return {
         count: my.length,
         my

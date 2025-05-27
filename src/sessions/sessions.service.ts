@@ -3,6 +3,8 @@ import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Request } from 'express';
+const DeviceDetector = require("device-detector-js");
+const deviceDetector = new DeviceDetector()
 
 @Injectable()
 export class SessionsService {
@@ -11,7 +13,10 @@ export class SessionsService {
   ){}
   async findAll(req: Request) {
     try {
-      let all = await this.prisma.sessions.findMany({where: {userId: req['user'].id}})
+      let all = await this.prisma.sessions.findMany({ where: { userId: req['user'].id, isActive: true } })
+      if (!all || all.length === 0) {
+        throw new BadRequestException("No active sessions found for this user");
+      }
       return all
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -35,9 +40,13 @@ export class SessionsService {
         throw new BadRequestException(`You have no permission to delete oters sessions. Only ADMIN can do that`);
       }
       
-      let deleted = this.prisma.sessions.delete({
-        where: {id}
+      let deleted = this.prisma.sessions.update({
+        where: { id },
+        data: {
+          isActive: false
+        }
       })
+      return deleted;
     } catch (error) {
       throw new BadRequestException(error.message);
     }

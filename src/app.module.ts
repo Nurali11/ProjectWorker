@@ -16,6 +16,14 @@ import { RegionModule } from './region/region.module';
 import { CommentModule } from './comment/comment.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { BotModule } from './bot/bot.module';
+import { MulterController } from './multer/multer.controller';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { GeneralinfoModule } from './generalinfo/generalinfo.module';
+import { FaqModule } from './faq/faq.module';
+import { ContactModule } from './contact/contact.module';
+import { PartnerModule } from './partner/partner.module';
+import { ShowcaseModule } from './showcase/showcase.module';
 
 @Module({
   imports: [UserModule, SessionsModule, MasterModule, ToolModule, OrderModule, SizeModule, BrandModule, LevelModule, CapacityModule, PrismaModule,
@@ -28,9 +36,18 @@ import { BotModule } from './bot/bot.module';
     RegionModule,
     CommentModule,
     BotModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
+    GeneralinfoModule,
+    FaqModule,
+    ContactModule,
+    PartnerModule,
+    ShowcaseModule
 
   ],
-  controllers: [AppController],
+  controllers: [AppController, MulterController],
   providers: [AppService],
 })
 export class AppModule {}

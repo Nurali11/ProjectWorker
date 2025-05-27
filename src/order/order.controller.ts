@@ -21,9 +21,10 @@ export class OrderController {
     return this.orderService.ConnectWorker(data);
   }
 
+  @UseGuards(AuthGuard)
   @Get("my-orders")
   myOrders(@Req() req: Request){
-    return this.orderService
+    return this.orderService.myOrders(req);
   }
 
 @Get()

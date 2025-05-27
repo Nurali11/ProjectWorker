@@ -32,23 +32,23 @@ enum UserStatus {
 }
 
 model Sessions {
-  id     Int  @id @default(autoincrement())
-  device Json
-
+  id        Int      @id @default(autoincrement())
+  device    Json
+  isActive  Boolean? @default(true)
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   createdAt DateTime @default(now())
 }
 
 model User {
-  id       Int        @id @default(autoincrement())
-  name     String?
-  email    String?    @unique
-  phone    String?    @unique
-  password String?
-  telegramId  String?
-  role     Roles?  @default(USER)
-  status   UserStatus @default(UNVERIFIED)
+  id         Int        @id @default(autoincrement())
+  name       String?
+  email      String?    @unique
+  phone      String?    @unique
+  password   String?
+  telegramId String?
+  role       Roles?     @default(USER)
+  status     UserStatus @default(UNVERIFIED)
 
   Orders    Order[]
   Region    Region?    @relation(fields: [regionId], references: [id], onDelete: Cascade)
@@ -178,6 +178,7 @@ model Order {
   paymentType       String?
   withDelivery      Boolean?
   commentToDelivery String?
+  measure           String?  @default("8 HOUR")
   status            OrderStatus @default(PENDING)
   User              User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId            Int?
@@ -189,11 +190,30 @@ model Order {
   comments          Comment[]
 }
 
+model Comment {
+  id      Int    @id @default(autoincrement())
+  message String
+  star    Star[]
+  Order   Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId Int?
+  User    User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  Int?
+}
+
+model Star {
+  id        Int      @id @default(autoincrement())
+  star      Int
+  Master    Master?  @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  masterId  Int?
+  Comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId Int?
+}
+
 model GeneralInfo {
   id     Int    @id @default(autoincrement())
   email  String
-  links  String
-  phones String
+  links  Json
+  phones Json
 }
 
 model FAQ {
@@ -203,21 +223,34 @@ model FAQ {
   createdAt DateTime @default(now())
 }
 
-model Comment {
-  id       Int     @id @default(autoincrement())
-  message  String
-  star     Star[]
-  Order    Order?  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId  Int?
-  User     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   Int?
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  address   String
+  message   String
+  createdAt DateTime @default(now())
 }
 
-model Star {
+model ShowCase {
   id        Int      @id @default(autoincrement())
-  star     Int
-  Master    Master?  @relation(fields: [masterId], references: [id], onDelete: Cascade)
-  masterId  Int?
-  Comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId Int?
+  name_uz String
+  name_ru String
+  name_en String
+  description_uz String
+  description_ru String
+  description_en String
+  image     String
+  link      String
+  createdAt DateTime @default(now())
 }
+
+model Partner {
+  id        Int      @id @default(autoincrement())
+  name_uz String
+  name_ru String
+  name_en String
+  image     String
+  createdAt DateTime @default(now())
+}
+

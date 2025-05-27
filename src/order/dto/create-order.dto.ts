@@ -59,13 +59,15 @@ export class OrderDto {
     example: {
       productId: 1,
       levelId: 2,
-      quantity: 5
-    }
+      quantity: 5,
+      measure: "8 hours"
+    },
   })
   OrderProducts: {
     productId: number;
     levelId: number;
     quantity: number;
+      measure: string;
   }
   
     @ApiProperty({

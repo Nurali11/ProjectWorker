@@ -8,9 +8,7 @@ import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-
+  constructor(private readonly userService: UserService) { }
   @Post("verify-otp")
   verifyOtp(@Body() body: VerifyEmail) {
     return this.userService.verifyEmail(body);
