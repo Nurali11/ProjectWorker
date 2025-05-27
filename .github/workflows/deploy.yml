@@ -42,5 +42,7 @@ jobs:
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           script: |
             cd /home/ubuntu/nestjs-app
-             /usr/bin/npm install --omit=dev
-             /usr/bin restart ecosystem.config.js || /usr/bin/pm2 start ecosystem.config.js
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+            /usr/bin/npm install --omit=dev
+            /usr/bin/npx prisma migrate deploy # <--- это ОБЯЗАТЕЛЬНО
+            /usr/bin/pm2 restart ecosystem.config.js || /usr/bin/pm2 start ecosystem.config.js
