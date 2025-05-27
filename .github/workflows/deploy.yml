@@ -44,5 +44,5 @@ jobs:
             cd /home/ubuntu/nestjs-app
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
             /usr/bin/npm install --omit=dev
-            /usr/bin/npx prisma migrate deploy # <--- это ОБЯЗАТЕЛЬНО
+            /usr/bin/npx prisma migrate deploy
             /usr/bin/pm2 restart ecosystem.config.js || /usr/bin/pm2 start ecosystem.config.js
